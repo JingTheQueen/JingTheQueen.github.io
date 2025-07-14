@@ -3,47 +3,63 @@ layout: page
 ---
 {{ content }}
 
-{% if page.collection and page.collection.size > 0 %}
-  {% assign collection = site[page.collection] %}
-  {% if collection and collection.size > 0 %}
-    {% for item in collection reversed %}
-      {% assign current_year = item.date | date: '%Y' %}
-      {% if current_year != year %}
-        {% unless forloop.first %}
-          </ul>
-        {% endunless %}
-        <h1 id="y{{item.date | date: "%Y"}}">
-          <a href="{{ current_year | prepend: '/books/' | relative_url }}">{{ current_year }}</a>
-        </h1>
-        <ul>
-          {% assign year = current_year %}
-      {% endif %}
-
-      <figure class="cover">
-        <a class="cover-link" href="{{ item.url | relative_url }}">
-          {% if item.cover %}
-            <img alt="{{ item.title }} cover" src="{{ item.cover | prepend: page.covers | relative_url }}" style="height:200px">
-          {% elsif item.olid %}
-            <img alt="{{ item.title }} cover" src="http://covers.openlibrary.org/b/olid/{{ item.olid }}-L.jpg?default=false" style="height:200px">
-          {% elsif item.isbn %}
-            <img alt="{{ item.title }} cover" src="http://covers.openlibrary.org/b/isbn/{{ item.isbn }}-L.jpg?default=false" style="height:200px">
-          {% endif %}
-          {% if item.status %}
-            {% assign statuses = 'abandoned,finished,interested,paused,queued,reading,reread' | split: ',' %}
-            {% assign status = item.status | downcase | strip %}
-            {% if statuses contains status %}
-              <figcaption class="{{ status | downcase }}">{{ status | upcase }}</figcaption>
-            {% else %}
-              <figcaption class="uncategorized">UNCATEGORIZED</figcaption>
-            {% endif %}
-          {% else %}
-            <figcaption class="uncategorized">UNCATEGORIZED</figcaption>
-          {% endif %}
-        </a>
-      </figure>
-      {% if forloop.last %}
-        </ul>
-      {% endif %}
-    {% endfor %}
+<div class="publications">
+{% assign collection = site.books | sort: "released" | reverse %}
+{% for item in collection %}
+  {% assign current_year = item.released %}
+  {% if current_year != year %}
+    {% unless forloop.first %}
+      </div>
+    {% endunless %}
+    <h2 class="year">{{current_year}}</h2>
+    <div class="entries">
+    {% assign year = current_year %}
   {% endif %}
-{% endif %}
+
+  <div class="entry mb-4">
+    <div class="row">
+      <div class="col-sm-2">
+      {% if item.cover %}
+        <img src="{{ item.cover | relative_url }}" class="img-fluid rounded z-depth-1" alt="{{ item.title }} cover">
+      {% elsif item.olid %}
+        <img src="http://covers.openlibrary.org/b/olid/{{ item.olid }}-M.jpg?default=false" class="img-fluid rounded z-depth-1" alt="{{ item.title }} cover">
+      {% elsif item.isbn %}
+        <img src="http://covers.openlibrary.org/b/isbn/{{ item.isbn }}-M.jpg?default=false" class="img-fluid rounded z-depth-1" alt="{{ item.title }} cover">
+      {% endif %}
+      </div>
+      <div class="col-sm-10">
+        <div class="title">{{ item.title }}</div>
+        <div class="author">{{ item.author }}</div>
+        <div class="periodical">
+          <em>Released in {{ item.released }}</em>
+          {% if item.stars %}
+          ,
+            <span class="stars">
+            {% for i in (1..item.stars) %}
+              <i class="fa-solid fa-star"></i>
+            {% endfor %}
+            {% for i in (item.stars..4) %}
+              <i class="fa-regular fa-star"></i>
+            {% endfor %}
+            </span>
+          {% endif %}
+        </div>
+        <div class="links">
+        {% if item.buy_link %}
+          <a href="{{ item.buy_link }}" class="btn btn-sm z-depth-0" role="button" target="_blank" rel="noopener noreferrer">Buy</a>
+        {% endif %}
+        </div>
+        {% if item.content != "" %}
+        <div class="abstract">
+          {{ item.content | markdownify }}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  {% if forloop.last %}
+    </div>
+  {% endif %}
+{% endfor %}
+</div>
